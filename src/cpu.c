@@ -29,7 +29,7 @@ byte fontset[80] =
         0xF0, 0x80, 0xF0, 0x80, 0x80  // F
 };
 
-void chip8Init(chip8regset* cpu)
+void chip8Init(chip8regset *cpu)
 {
     // setting required register
     cpu->pc = ROMSTART;
@@ -123,23 +123,23 @@ void chip8EmulateCycle(chip8regset *cpu)
             cpu->pc += 2;
             break;
 
-        case 0x000E:// 0x00EE: Returns from subroutine
-            --cpu->sp;  // 16 levels of stack, decrease stack pointer to prevent overwrite
+        case 0x000E:                  // 0x00EE: Returns from subroutine
+            --cpu->sp;                // 16 levels of stack, decrease stack pointer to prevent overwrite
             cpu->pc = stack[cpu->sp]; // Put the stored return address from the stack back into the program counter
-            cpu->pc += 2;  // Don't forget to increase the program counter!
+            cpu->pc += 2;             // Don't forget to increase the program counter!
             break;
 
         default:
             printf("Unknown cpu->opCode [0x0000]: 0x%X\n", cpu->opCode);
         }
         break;
-    case 0x1000: // 0x1NNN: jumps to address NNN
+    case 0x1000:                        // 0x1NNN: jumps to address NNN
         cpu->pc = cpu->opCode & 0x0FFF; // setting PC to NNN
         break;
 
-    case 0x2000: // 0x2NNN: calls subroutine at NNN
-        stack[cpu->sp] = cpu->pc; // saving return location in stack
-        cpu->sp++;    // incrementing the SP
+    case 0x2000:                        // 0x2NNN: calls subroutine at NNN
+        stack[cpu->sp] = cpu->pc;       // saving return location in stack
+        cpu->sp++;                      // incrementing the SP
         cpu->pc = cpu->opCode & 0x0FFF; // calling subroutine at NNN
         break;
 
@@ -175,17 +175,17 @@ void chip8EmulateCycle(chip8regset *cpu)
         switch (cpu->opCode & 0x000F)
         {
         case 0x0000: //0x8XY0: sets cpu->vX = cpu->vY
-            cpu->v[(cpu->opCode & 0xF00) >> 8] = cpu->v[(cpu->opCode & 0x0F00) >> 4];
+            cpu->v[(cpu->opCode & 0xF00) >> 8] = cpu->v[(cpu->opCode & 0x00F0) >> 4];
             cpu->pc += 2;
             break;
 
         case 0x0001: //0x8XY1: Sets cpu->vX to cpu->vX or cpu->vY.
-            cpu->v[(cpu->opCode & 0xF00) >> 8] |= cpu->v[(cpu->opCode & 0x0F00) >> 4];
+            cpu->v[(cpu->opCode & 0xF00) >> 8] |= cpu->v[(cpu->opCode & 0x00F0) >> 4];
             cpu->pc += 2;
             break;
 
         case 0x0002: //0x8XY2: Sets cpu->vX to cpu->vX AND cpu->vY
-            cpu->v[(cpu->opCode & 0xF00) >> 8] &= cpu->v[(cpu->opCode & 0x0F00) >> 4];
+            cpu->v[(cpu->opCode & 0xF00) >> 8] &= cpu->v[(cpu->opCode & 0x00F0) >> 4];
             cpu->pc += 2;
             break;
 
@@ -218,9 +218,9 @@ void chip8EmulateCycle(chip8regset *cpu)
             cpu->pc += 2;
             break;
 
-        case 0x0007:                                                                   // 0x8XY7: Sets cpu->vX to cpu->vY minus cpu->vX. cpu->vF is set to 0 when there's a borrow, and 1 when there isn't
+        case 0x0007:                                                                       // 0x8XY7: Sets cpu->vX to cpu->vY minus cpu->vX. cpu->vF is set to 0 when there's a borrow, and 1 when there isn't
             if (cpu->v[(cpu->opCode & 0x0F00) >> 8] > cpu->v[(cpu->opCode & 0x00F0) >> 4]) // cpu->vY-cpu->vX
-                cpu->v[0xF] = 0;                                                        // there is a borrow
+                cpu->v[0xF] = 0;                                                           // there is a borrow
             else
                 cpu->v[0xF] = 1;
             cpu->v[(cpu->opCode & 0x0F00) >> 8] = cpu->v[(cpu->opCode & 0x00F0) >> 4] - cpu->v[(cpu->opCode & 0x0F00) >> 8];
@@ -353,7 +353,7 @@ void chip8EmulateCycle(chip8regset *cpu)
             cpu->pc += 2;
             break;
 
-        case 0x001E:                                               // FX1E: Adds cpu->vX to I
+        case 0x001E:                                                  // FX1E: Adds cpu->vX to I
             if (cpu->i + cpu->v[(cpu->opCode & 0x0F00) >> 8] > 0xFFF) // cpu->vF is set to 1 when range overflow (I+cpu->vX>0xFFF), and 0 when there isn't.
                 cpu->v[0xF] = 1;
             else
