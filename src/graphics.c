@@ -197,7 +197,8 @@ void draw(void)
     int x, y;
     r.x = 0;
     r.y = 0;
-
+    r.w = 1;
+    r.h = 1;
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         SDL_RenderClear(renderer);
         SDL_SetRenderDrawColor(renderer, 0, 255, 0, 0);
@@ -209,8 +210,6 @@ void draw(void)
                 {
                     r.x = x;
                     r.y = y;
-                    r.w = 1;
-                    r.h = 1;
                     SDL_RenderFillRect(renderer, &r);
                 }
             }
