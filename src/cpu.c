@@ -115,9 +115,9 @@ void chip8EmulateCycle(chip8regset *cpu)
     switch (cpu->opCode & 0xF000)
     {
     case 0x0000:
-        switch (cpu->opCode & 0x000F)
+        switch (cpu->opCode & 0x00FF)
         {
-        case 0x0000: // 0x00E0: Clears the screen
+        case 0x00E0: // 0x00E0: Clears the screen
             memset(gfx, 0, PIXELS);
             drawFlag = true;
             cpu->pc += 2;
@@ -128,9 +128,10 @@ void chip8EmulateCycle(chip8regset *cpu)
             cpu->pc = stack[cpu->sp]; // Put the stored return address from the stack back into the program counter
             cpu->pc += 2;             // Don't forget to increase the program counter!
             break;
-
+            
         default:
-            printf("Unknown cpu->opCode [0x0000]: 0x%X\n", cpu->opCode);
+            cpu->pc = cpu->opCode & 0x0FFF;
+// //             printf("Unknown cpu->opCode [0x0000]: 0x%X\n", cpu->opCode);
         }
         break;
     case 0x1000:                        // 0x1NNN: jumps to address NNN
@@ -265,10 +266,10 @@ void chip8EmulateCycle(chip8regset *cpu)
         // cpu->vF is set to 1 if any screen pixels are flipped from set to unset when the sprite is drawn,
         // and to 0 if that doesn't happen
     {
-        byte x = cpu->v[(cpu->opCode & 0x0F00) >> 8];
-        byte y = cpu->v[(cpu->opCode & 0x00F0) >> 4];
-        byte height = cpu->opCode & 0x000F;
-        byte pixel;
+        word x = cpu->v[(cpu->opCode & 0x0F00) >> 8];
+        word y = cpu->v[(cpu->opCode & 0x00F0) >> 4];
+        word height = cpu->opCode & 0x000F;
+        word pixel;
 
         cpu->v[0xF] = 0;
         for (int yline = 0; yline < height; yline++)
@@ -375,20 +376,22 @@ void chip8EmulateCycle(chip8regset *cpu)
             break;
 
         case 0x0055: // FX55: Stores cpu->v0 to cpu->vX in memory starting at address I
-            for (int i = 0; i <= ((cpu->opCode & 0x0F00) >> 8); ++i)
-                memory[cpu->i + i] = cpu->v[i];
+//             for (int i = 0; i <= ((cpu->opCode & 0x0F00) >> 8); ++i)
+//                 memory[cpu->i + i] = cpu->v[i];
 
             // On the original interpreter, when the operation is done, I = I + X + 1.
-            cpu->i += ((cpu->opCode & 0x0F00) >> 8) + 1;
+//             cpu->i += ((cpu->opCode & 0x0F00) >> 8) + 1;
+                         memcpy(memory + cpu->i, cpu->v, ((cpu->opCode & 0x0F00) >> 8 + 1));
             cpu->pc += 2;
             break;
 
         case 0x0065: // FX65: Fills cpu->v0 to cpu->vX with values from memory starting at address I
-            for (int i = 0; i <= ((cpu->opCode & 0x0F00) >> 8); ++i)
-                cpu->v[i] = memory[cpu->i + i];
+//             for (int i = 0; i <= ((cpu->opCode & 0x0F00) >> 8); ++i)
+//                 cpu->v[i] = memory[cpu->i + i];
 
             // On the original interpreter, when the operation is done, I = I + X + 1.
-            cpu->i += ((cpu->opCode & 0x0F00) >> 8) + 1;
+//             cpu->i += ((cpu->opCode & 0x0F00) >> 8) + 1;
+                        memcpy(cpu->v, memory + cpu->i, ((cpu->opCode & 0x0F00) >>8 + 1));
             cpu->pc += 2;
             break;
 
@@ -409,5 +412,10 @@ void chip8EmulateCycle(chip8regset *cpu)
         if (cpu->st == 1)
             printf("BEEP!\n");
         --cpu->st;
+    }
+    printf("----------Registers-----------\n");
+    printf("opcode- %X\n",cpu->opCode);
+    for(int i=0; i<16; i++){
+        printf("V[%d]= %d\n",i,cpu->v[i]);
     }
 }
