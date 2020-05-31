@@ -7,29 +7,24 @@ SDL_Window *window;
 SDL_Texture *screen;
 SDL_Event event;
 bool quit = false;
-// extern byte key[16];
-// extern bool drawFlag;
-// extern byte gfx[PIXELS];
+bool paused = false;
 
 void graphicsInit(void){
 
     if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
-    {
         fprintf(stderr, "SDL failed to initialise: %s\n", SDL_GetError());
-        
-    }
 
+    // getting things ready for displaying stuffs
     window = SDL_CreateWindow("CHIP-8", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WIDTH, HEIGHT, 0);
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     SDL_RenderSetLogicalSize(renderer, 64, 32);
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
-
     screen = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, WIDTH, HEIGHT);
 }
 void graphicsLoop(const char* filename, chip8regset *cpu){
     int delay = 4;
-//     printf("Delay: %d \n", delay);
+    printf("Delay: %d \n", delay);
     while (!quit)
     {
         while (SDL_PollEvent(&event))
@@ -41,10 +36,13 @@ void graphicsLoop(const char* filename, chip8regset *cpu){
                 quit = 1;
                 break;
 
+            // When keys are pressed
             case SDL_KEYDOWN:
 
                 switch (event.key.keysym.sym)
                 {
+
+                // Exit on escape key
                 case SDLK_ESCAPE:
                     quit = 1;
                     break;
@@ -55,19 +53,29 @@ void graphicsLoop(const char* filename, chip8regset *cpu){
                     graphicsLoop(filename, cpu);
                     graphicsCleanUp();
                     break;
+
                 // run next instruction
                 case SDLK_n:
                     chip8EmulateCycle(cpu);
                     graphicsLoop(filename,cpu);
                     break;
+
+                // pauses and resumes the emulation
+                case SDLK_p:
+                    paused = !paused;
+                    break;
+
+                // decrease and increase cases of delay(to slow do display)
                 case SDLK_F2:
                     delay -= 1;
-//                     printf("Delay: %d \n", delay);
+                    printf("Delay: %d \n", delay);
                     break;
                 case SDLK_F3:
                     delay += 1;
-//                     printf("Delay: %d \n", delay);
+                    printf("Delay: %d \n", delay);
                     break;
+
+                //Keymap to control games
                 case SDLK_x:
                     key[0] = 1;
                     break;
@@ -119,6 +127,7 @@ void graphicsLoop(const char* filename, chip8regset *cpu){
                 }
                 break;
 
+            // when key is lifted
             case SDL_KEYUP:
 
                 switch (event.key.keysym.sym)
@@ -180,48 +189,46 @@ void graphicsLoop(const char* filename, chip8regset *cpu){
         if (delay < 0)
         {
             delay = 0;
-//             printf("Delay: %d \n", delay);
+            printf("Delay: %d \n", delay);
         }
         else
-        {
             SDL_Delay(delay);
-        }
+
         if (cpu->dt > 0)
             --cpu->dt;
 
-        chip8EmulateCycle(cpu);
-        if(drawFlag) draw();
+        if(!paused) chip8EmulateCycle(cpu);
+        if(drawFlag) graphicsDraw();
     }
 }
-void draw(void)
-{
-    // void *pixels;
-    // int pitch;            
+void graphicsDraw(void)
+{          
     SDL_Rect r;
     int x, y;
     r.x = 0;
     r.y = 0;
     r.w = 1;
     r.h = 1;
-        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-        SDL_RenderClear(renderer);
-        SDL_SetRenderDrawColor(renderer, 0, 255, 0, 0);
-        for (x = 0; x < WIDTH; x++)
+
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); // sets color to display (Black)(BG)
+    SDL_RenderClear(renderer);  // clears the screen with alreay set colors
+    SDL_SetRenderDrawColor(renderer, 0, 255, 0, 0); // sets color to display (Green)(FG)
+    for (x = 0; x < WIDTH; x++)
+    {
+        for (y = 0; y < HEIGHT; y++)
         {
-            for (y = 0; y < HEIGHT; y++)
+            if (gfx[(x) + ((y)*WIDTH)] == 1)
             {
-                if (gfx[(x) + ((y)*WIDTH)] == 1)
-                {
-                    r.x = x;
-                    r.y = y;
-                    SDL_RenderFillRect(renderer, &r);
-                }
+                r.x = x;
+                r.y = y;
+                SDL_RenderFillRect(renderer, &r); // Fills rectangles(actual stuffs) with already set colors
             }
         }
-        SDL_RenderPresent(renderer);
-        drawFlag = false;
+        }
+        SDL_RenderPresent(renderer);    // Present/Display all of the sprites
+        drawFlag = false;   // done drawing
 }
-void graphicsCleanUp(void)
+void graphicsCleanUp(void)  // wrap up graphics stuffs
 {
     SDL_DestroyTexture(screen);
     SDL_DestroyRenderer(renderer);

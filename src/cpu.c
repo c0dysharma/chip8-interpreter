@@ -8,7 +8,7 @@ byte memory[RAMSIZE];   //4KB of RAM
 word stack[STACKLEVEL]; //16levels for Subroutine (function calls)
 byte gfx[PIXELS];       // Total amount of pixels: 2048
 byte key[16];           // keys to be pressed from 0-F
-bool drawFlag;
+bool drawFlag = false;
 byte fontset[80] =
     {
         0xF0, 0x90, 0x90, 0x90, 0xF0, //0
@@ -123,10 +123,10 @@ void chip8EmulateCycle(chip8regset *cpu)
             cpu->pc += 2;
             break;
 
-        case 0x000E:                  // 0x00EE: Returns from subroutine
-            --cpu->sp;                // 16 levels of stack, decrease stack pointer to prevent overwrite
+        case 0x000E: // 0x00EE: Returns from subroutine
+            --cpu->sp;  // 16 levels of stack, decrease stack pointer to prevent overwrite
             cpu->pc = stack[cpu->sp]; // Put the stored return address from the stack back into the program counter
-            cpu->pc += 2;             // Don't forget to increase the program counter!
+            cpu->pc += 2;    // Don't forget to increase the program counter!
             break;
 
         default:
@@ -134,13 +134,13 @@ void chip8EmulateCycle(chip8regset *cpu)
             printf("Unknown cpu->opCode [0x0000]: 0x%X\n", cpu->opCode);
         }
         break;
-    case 0x1000:                        // 0x1NNN: jumps to address NNN
+    case 0x1000:  // 0x1NNN: jumps to address NNN
         cpu->pc = cpu->opCode & 0x0FFF; // setting PC to NNN
         break;
 
-    case 0x2000:                        // 0x2NNN: calls subroutine at NNN
-        stack[cpu->sp] = cpu->pc;       // saving return location in stack
-        cpu->sp++;                      // incrementing the SP
+    case 0x2000: // 0x2NNN: calls subroutine at NNN
+        stack[cpu->sp] = cpu->pc; // saving return location in stack
+        cpu->sp++;  // incrementing the SP
         cpu->pc = cpu->opCode & 0x0FFF; // calling subroutine at NNN
         break;
 
@@ -219,7 +219,7 @@ void chip8EmulateCycle(chip8regset *cpu)
             cpu->pc += 2;
             break;
 
-        case 0x0007:                                                                       // 0x8XY7: Sets cpu->vX to cpu->vY minus cpu->vX. cpu->vF is set to 0 when there's a borrow, and 1 when there isn't
+        case 0x0007: // 0x8XY7: Sets cpu->vX to cpu->vY minus cpu->vX. cpu->vF is set to 0 when there's a borrow, and 1 when there isn't
             if (cpu->v[(cpu->opCode & 0x0F00) >> 8] > cpu->v[(cpu->opCode & 0x00F0) >> 4]) // cpu->vY-cpu->vX
                 cpu->v[0xF] = 0;                                                           // there is a borrow
             else
@@ -364,7 +364,7 @@ void chip8EmulateCycle(chip8regset *cpu)
             break;
 
         case 0x0029: // FX29: Sets I to the location of the sprite for the character in cpu->vX. Characters 0-F (in hexadecimal) are represented by a 4x5 font
-            cpu->i = cpu->v[(cpu->opCode & 0x0F00) >> 8] * 0x5;
+            cpu->i = FONTSTART + cpu->v[(cpu->opCode & 0x0F00) >> 8] * 0x5;
             cpu->pc += 2;
             break;
 
@@ -415,13 +415,8 @@ void chip8EmulateCycle(chip8regset *cpu)
     if (cpu->st > 0)
     {
         if (cpu->st == 1)
+            //TODO: Implement Sound!
             printf("BEEP!\n");
         --cpu->st;
-    }
-    printf("----------Registers-----------\n");
-    printf("opcode- %X\n", cpu->opCode);
-    for (int i = 0; i < 16; i++)
-    {
-        printf("V[%d]= %d\n", i, cpu->v[i]);
     }
 }
