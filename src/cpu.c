@@ -11,22 +11,22 @@ byte key[16];           // keys to be pressed from 0-F
 bool drawFlag;
 byte fontset[80] =
     {
-        0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
-        0x20, 0x60, 0x20, 0x20, 0x70, // 1
-        0xF0, 0x10, 0xF0, 0x80, 0xF0, // 2
-        0xF0, 0x10, 0xF0, 0x10, 0xF0, // 3
-        0x90, 0x90, 0xF0, 0x10, 0x10, // 4
-        0xF0, 0x80, 0xF0, 0x10, 0xF0, // 5
-        0xF0, 0x80, 0xF0, 0x90, 0xF0, // 6
-        0xF0, 0x10, 0x20, 0x40, 0x40, // 7
-        0xF0, 0x90, 0xF0, 0x90, 0xF0, // 8
-        0xF0, 0x90, 0xF0, 0x10, 0xF0, // 9
-        0xF0, 0x90, 0xF0, 0x90, 0x90, // A
-        0xE0, 0x90, 0xE0, 0x90, 0xE0, // B
-        0xF0, 0x80, 0x80, 0x80, 0xF0, // C
-        0xE0, 0x90, 0x90, 0x90, 0xE0, // D
-        0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
-        0xF0, 0x80, 0xF0, 0x80, 0x80  // F
+        0xF0, 0x90, 0x90, 0x90, 0xF0, //0
+        0x20, 0x60, 0x20, 0x20, 0x70, //1
+        0xF0, 0x10, 0xF0, 0x80, 0xF0, //2
+        0xF0, 0x10, 0xF0, 0x10, 0xF0, //3
+        0x90, 0x90, 0xF0, 0x10, 0x10, //4
+        0xF0, 0x80, 0xF0, 0x10, 0xF0, //5
+        0xF0, 0x80, 0xF0, 0x90, 0xF0, //6
+        0xF0, 0x10, 0x20, 0x40, 0x40, //7
+        0xF0, 0x90, 0xF0, 0x90, 0xF0, //8
+        0xF0, 0x90, 0xF0, 0x10, 0xF0, //9
+        0xF0, 0x90, 0xF0, 0x90, 0x90, //A
+        0xE0, 0x90, 0xE0, 0x90, 0xE0, //B
+        0xF0, 0x80, 0x80, 0x80, 0xF0, //C
+        0xE0, 0x90, 0x90, 0x90, 0xE0, //D
+        0xF0, 0x80, 0xF0, 0x80, 0xF0, //E
+        0xF0, 0x80, 0xF0, 0x80, 0x80  //F
 };
 
 void chip8Init(chip8regset *cpu)
@@ -130,6 +130,7 @@ void chip8EmulateCycle(chip8regset *cpu)
             break;
 
         default:
+            // cpu->pc = cpu->opCode & 0x0FFF;
             printf("Unknown cpu->opCode [0x0000]: 0x%X\n", cpu->opCode);
         }
         break;
@@ -265,10 +266,10 @@ void chip8EmulateCycle(chip8regset *cpu)
         // cpu->vF is set to 1 if any screen pixels are flipped from set to unset when the sprite is drawn,
         // and to 0 if that doesn't happen
     {
-        byte x = cpu->v[(cpu->opCode & 0x0F00) >> 8];
-        byte y = cpu->v[(cpu->opCode & 0x00F0) >> 4];
-        byte height = cpu->opCode & 0x000F;
-        byte pixel;
+        word x = cpu->v[(cpu->opCode & 0x0F00) >> 8];
+        word y = cpu->v[(cpu->opCode & 0x00F0) >> 4];
+        word height = cpu->opCode & 0x000F;
+        word pixel;
 
         cpu->v[0xF] = 0;
         for (int yline = 0; yline < height; yline++)
@@ -349,11 +350,11 @@ void chip8EmulateCycle(chip8regset *cpu)
             break;
 
         case 0x0018: // FX18: Sets the sound timer to cpu->vX
-            cpu->pc = cpu->v[(cpu->opCode & 0x0F00) >> 8];
+            cpu->st = cpu->v[(cpu->opCode & 0x0F00) >> 8];
             cpu->pc += 2;
             break;
 
-        case 0x001E:                                                  // FX1E: Adds cpu->vX to I
+        case 0x001E: // FX1E: Adds cpu->vX to I
             if (cpu->i + cpu->v[(cpu->opCode & 0x0F00) >> 8] > 0xFFF) // cpu->vF is set to 1 when range overflow (I+cpu->vX>0xFFF), and 0 when there isn't.
                 cpu->v[0xF] = 1;
             else
@@ -363,6 +364,11 @@ void chip8EmulateCycle(chip8regset *cpu)
             break;
 
         case 0x0029: // FX29: Sets I to the location of the sprite for the character in cpu->vX. Characters 0-F (in hexadecimal) are represented by a 4x5 font
+            cpu->i = cpu->v[(cpu->opCode & 0x0F00) >> 8] * 0x5;
+            cpu->pc += 2;
+            break;
+
+        case 0x0030: //Super Chip: FX30: Point cpu->i to 10-byte font sprite for digit VX (0..9)
             cpu->i = cpu->v[(cpu->opCode & 0x0F00) >> 8] * 0x5;
             cpu->pc += 2;
             break;
@@ -379,7 +385,8 @@ void chip8EmulateCycle(chip8regset *cpu)
                 memory[cpu->i + i] = cpu->v[i];
 
             // On the original interpreter, when the operation is done, I = I + X + 1.
-            cpu->i += ((cpu->opCode & 0x0F00) >> 8) + 1;
+            // cpu->i += ((cpu->opCode & 0x0F00) >> 8) + 1;
+            //                          memcpy(memory + cpu->i, cpu->v, ((cpu->opCode & 0x0F00) >> 8 + 1));
             cpu->pc += 2;
             break;
 
@@ -388,7 +395,8 @@ void chip8EmulateCycle(chip8regset *cpu)
                 cpu->v[i] = memory[cpu->i + i];
 
             // On the original interpreter, when the operation is done, I = I + X + 1.
-            cpu->i += ((cpu->opCode & 0x0F00) >> 8) + 1;
+            // cpu->i += ((cpu->opCode & 0x0F00) >> 8) + 1;
+            //                         memcpy(cpu->v, memory + cpu->i, ((cpu->opCode & 0x0F00) >>8 + 1));
             cpu->pc += 2;
             break;
 
@@ -409,5 +417,11 @@ void chip8EmulateCycle(chip8regset *cpu)
         if (cpu->st == 1)
             printf("BEEP!\n");
         --cpu->st;
+    }
+    printf("----------Registers-----------\n");
+    printf("opcode- %X\n", cpu->opCode);
+    for (int i = 0; i < 16; i++)
+    {
+        printf("V[%d]= %d\n", i, cpu->v[i]);
     }
 }

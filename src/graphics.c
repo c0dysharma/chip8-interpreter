@@ -28,15 +28,16 @@ void graphicsInit(void){
     screen = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, WIDTH, HEIGHT);
 }
 void graphicsLoop(const char* filename, chip8regset *cpu){
-    int speed = 4;
+    int delay = 4;
+//     printf("Delay: %d \n", delay);
     while (!quit)
     {
-        printf("Speed: %d \n", speed);
         while (SDL_PollEvent(&event))
         {
             switch (event.type)
             {
             case SDL_QUIT:
+                graphicsCleanUp();
                 quit = 1;
                 break;
 
@@ -54,12 +55,18 @@ void graphicsLoop(const char* filename, chip8regset *cpu){
                     graphicsLoop(filename, cpu);
                     graphicsCleanUp();
                     break;
-
+                // run next instruction
+                case SDLK_n:
+                    chip8EmulateCycle(cpu);
+                    graphicsLoop(filename,cpu);
+                    break;
                 case SDLK_F2:
-                    speed -= 1;
+                    delay -= 1;
+//                     printf("Delay: %d \n", delay);
                     break;
                 case SDLK_F3:
-                    speed += 1;
+                    delay += 1;
+//                     printf("Delay: %d \n", delay);
                     break;
                 case SDLK_x:
                     key[0] = 1;
@@ -170,37 +177,35 @@ void graphicsLoop(const char* filename, chip8regset *cpu){
             break;
         }
 
-        if (speed < 0)
+        if (delay < 0)
         {
-            speed = 0;
+            delay = 0;
+//             printf("Delay: %d \n", delay);
         }
         else
         {
-            SDL_Delay(speed);
+            SDL_Delay(delay);
         }
         if (cpu->dt > 0)
             --cpu->dt;
 
         chip8EmulateCycle(cpu);
-        draw();
+        if(drawFlag) draw();
     }
 }
 void draw(void)
 {
-    void *pixels;
-    int pitch;            
+    // void *pixels;
+    // int pitch;            
     SDL_Rect r;
     int x, y;
     r.x = 0;
     r.y = 0;
     r.w = 1;
     r.h = 1;
-
-    if (drawFlag)
-    {
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         SDL_RenderClear(renderer);
-        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 0);
+        SDL_SetRenderDrawColor(renderer, 0, 255, 0, 0);
         for (x = 0; x < WIDTH; x++)
         {
             for (y = 0; y < HEIGHT; y++)
@@ -214,8 +219,7 @@ void draw(void)
             }
         }
         SDL_RenderPresent(renderer);
-    }
-    drawFlag = false;
+        drawFlag = false;
 }
 void graphicsCleanUp(void)
 {
