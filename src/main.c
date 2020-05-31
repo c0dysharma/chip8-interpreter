@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include "../includes/main.h"
 chip8regset cpu;
-// int x;
+
 int main(int argc, const char *argv[])
 {
     graphicsInit();

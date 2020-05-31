@@ -38,8 +38,8 @@ extern byte memory[RAMSIZE];   //4KB of RAM
 extern word stack[STACKLEVEL]; //16levels for Subroutine (function calls)
 extern byte gfx[PIXELS];       // Total amount of pixels: 2048
 extern byte key[16];           // keys to be pressed from 0-F
-extern bool drawFlag;
-extern bool paused;
+extern bool drawFlag;          // flags tells when to draw on screen
+extern bool paused;            // flags tell status of play and pause
 //graphics stuffs
 extern SDL_Renderer *renderer;
 extern SDL_Window *window;
