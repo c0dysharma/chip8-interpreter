@@ -55,7 +55,11 @@ void graphicsLoop(const char* filename, chip8regset *cpu){
                     graphicsLoop(filename, cpu);
                     graphicsCleanUp();
                     break;
-
+                // run next instruction
+                case SDLK_n:
+                    chip8EmulateCycle(cpu);
+                    graphicsLoop(filename,cpu);
+                    break;
                 case SDLK_F2:
                     delay -= 1;
 //                     printf("Delay: %d \n", delay);
@@ -215,11 +219,6 @@ void draw(void)
             }
         }
         SDL_RenderPresent(renderer);
-        // SDL_UpdateTexture(screen, NULL, gfx,
-        //                   WIDTH * sizeof(byte));
-        // SDL_RenderCopy(renderer, screen, NULL, NULL);
-        // SDL_RenderPresent(renderer);
-    
         drawFlag = false;
 }
 void graphicsCleanUp(void)
