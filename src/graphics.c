@@ -4,6 +4,7 @@
 
 SDL_Renderer *renderer;
 SDL_Window *window;
+SDL_Surface *image;
 SDL_Texture *screen;
 SDL_Event event;
 bool quit = false;
@@ -19,8 +20,14 @@ void graphicsInit(void){
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     SDL_RenderSetLogicalSize(renderer, 64, 32);
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-    SDL_RenderClear(renderer);
-    screen = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, WIDTH, HEIGHT);
+    // displaying the startup image
+    image = SDL_LoadBMP("logo.bmp");
+    screen = SDL_CreateTextureFromSurface(renderer,image);
+    SDL_FreeSurface(image); // we don't need it now
+    SDL_RenderClear(renderer); // making sure renderer is clear
+    SDL_RenderCopy(renderer,screen, NULL, NULL); // copying this to render
+    SDL_RenderPresent(renderer);   // displaying the image
+    SDL_Delay(2000); // wait to let user see the logo
 }
 void graphicsLoop(const char* filename, chip8regset *cpu){
     int delay = 4;
