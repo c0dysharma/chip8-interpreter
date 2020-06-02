@@ -4,6 +4,7 @@ chip8regset cpu;
 
 int main(int argc, const char *argv[])
 {
+    // TODO: Add debugger
     graphicsInit();
     chip8Init(&cpu);
     chip8LoadGame(argv[1]);
