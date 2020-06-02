@@ -2,7 +2,7 @@
 #define MAIN_H
 
 #include <SDL2/SDL.h>
-#define SCALE 16
+#define SCALE 10
 #define STACKLEVEL 16
 #define RAMSIZE 4096
 #define WIDTH (SCALE * 64)
