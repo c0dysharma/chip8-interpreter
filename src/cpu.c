@@ -53,6 +53,8 @@ void chip8Init(chip8regset *cpu)
 
 void chip8LoadGame(const char *fileName)
 {
+    SDL_RenderClear(renderer);
+    screen = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, WIDTH, HEIGHT);
     // opening the game file
     FILE *in = fopen(fileName, "rb");
     if (!in)
