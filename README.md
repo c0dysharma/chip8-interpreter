@@ -29,6 +29,7 @@ $ `make`
 ### Usage
 #### Unix based
 `cd` into to `chip8-interpreter/bin/`
+
 $ `./chip8 <path-to-rom-file>`
 
   *ex- ./chip8 ../roms/BRIX*
@@ -36,7 +37,7 @@ $ `./chip8 <path-to-rom-file>`
 #### Windows
 Go to `chip8-interpreter/bin/` hold down `shift` and `right click` on window area and select `Open Command Window Here`
 
-> `chip8win.exe <path-to-rom-file>`
+ `chip8win.exe <path-to-rom-file>`
 
   *ex- chip8win.exe ..\roms\BRIX*
   
