@@ -6,12 +6,12 @@
 <h4 align="center">Emulation for a 1970s gaming console coded in C and SDL2 library.</h4>
 
 ## Introduction
-A Simple Emulator Progaram which can run [CHIP-8](https://en.wikipedia.org/wiki/CHIP-8) [Games](https://github.com/shnupta/Chip-Emul8/tree/master/c8games) on Windows, Linux, and Mac.
+A Simple Emulator Program which can run [CHIP-8](https://en.wikipedia.org/wiki/CHIP-8) [Games](https://github.com/shnupta/Chip-Emul8/tree/master/c8games) on Windows, Linux, and macOS.
 
 ![DEMO](Pictures/chip8-demo.gif)
 <h4 align="center"><i>BRIX Game running on my Linux box.</i></h4>
 
-## Installaion
+## Installation
 I added Windows and Linux precompiled binaries in bin folder so you can skip compilation
 #### Arch-Linux
 $ `sudo pacman -S sdl2 make`
@@ -19,7 +19,7 @@ $ `sudo pacman -S sdl2 make`
 $ `sudo apt-get install libsdl2-dev make`
 #### Cent-os
 $ `sudo yum install SDL2-devel make`
-#### Mac OS
+#### macOS
 $ `brew install make sdl2`
 ### Get a copy of repo and compile
 $ `git clone https://github.com/c0dysharma/chip8-interpreter.git`
@@ -27,7 +27,7 @@ $ `git clone https://github.com/c0dysharma/chip8-interpreter.git`
 $ `make`
 
 ## Usage
-#### Unix based
+#### Unix-based
 `cd` into to `chip8-interpreter/bin/`
 
 $ `./chip8 <path-to-rom-file>`
@@ -64,7 +64,7 @@ UFO
 
 `TODO: optimise code`
 
-## Refernces
+## References
 [0] https://en.wikipedia.org/wiki/CHIP-8
 
 [1] http://www.multigesture.net/articles/how-to-write-an-emulator-chip-8-interpreter/
