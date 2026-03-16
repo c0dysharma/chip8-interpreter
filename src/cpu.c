@@ -34,7 +34,11 @@ void chip8Init(chip8regset *cpu)
     // setting required register
     cpu->pc = ROMSTART;
 
-    cpu->i, cpu->sp, cpu->opCode, cpu->st, cpu->dt = 0;
+    cpu->i = 0;
+    cpu->sp = 0; 
+    cpu->opCode = 0; 
+    cpu->st = 0;
+    cpu->dt = 0;
 
     // zero-ing out memories
     memset(memory, 0, HIGHMEM);
@@ -68,7 +72,7 @@ void chip8LoadGame(const char *fileName)
     fseek(in, 0, SEEK_END);
     long lSize = ftell(in);
     rewind(in);
-    printf("Size of Game file %d bytes\n", lSize);
+    printf("Size of Game file %ld bytes\n", lSize);
 
     // storing ROM Data in a buffer
     char *buffer = (char *)malloc(sizeof(char) * lSize);
